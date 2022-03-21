@@ -1,0 +1,12 @@
+joblib
+numpy
+pandas
+plotly
+python-dateutil
+pytz
+retrying
+scikit-learn
+scipy
+six
+sklearn
+threadpoolctl
