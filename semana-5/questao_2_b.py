@@ -63,11 +63,19 @@ class CyclicConverter():
             new_row = {k:v for k,v in row.items()}
             for key, value in row.items():
                 if key in self.columns:
-                    new_row[key] = (
-                        CyclicConverter.get_sin_attr(self.cyclic_table[key][value], len(self.cyclic_table[key])),
-                        CyclicConverter.get_cos_attr(self.cyclic_table[key][value], len(self.cyclic_table[key])))
+                    new_row[f'{key}_sin'] = CyclicConverter.get_sin_attr(self.cyclic_table[key][value], len(self.cyclic_table[key]))
+                    new_row[f'{key}_cos'] = CyclicConverter.get_cos_attr(self.cyclic_table[key][value], len(self.cyclic_table[key]))
+                    del new_row[key]
             self.data[index] = new_row
         return self.data
+
+    def get_new_columns(self, columns):
+        new_columns = [col for col in columns if col not in self.columns]
+        for col in columns:
+            if col in self.columns:
+                new_columns.append(f'{col}_sin')
+                new_columns.append(f'{col}_cos')
+        return new_columns
 
     @staticmethod
     def get_sin_attr(index, length):
@@ -84,7 +92,7 @@ def main():
 
     print(tuple(data[0].keys()))
     [print(tuple(row.values())) for row in data]
-    export_data('./data/questao_2_b_export.csv', data, columns)
+    export_data('./data/questao_2_b_export.csv', data, cyclic_converter.get_new_columns(columns))
 
 
 if __name__ == '__main__':
