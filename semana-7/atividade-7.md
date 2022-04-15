@@ -296,3 +296,195 @@
         kmedias = KMedias(X, 3, 10)
         print(kmedias.predict(init=None))
         ```
+- 2\. a)
+    - Fiz a questão com o auxílio do `StratifiedShuffleSplit` da biblioteca `sklearn` para realizar o split stratificado e o `KMedoids` da biblioteca `sklearn_extra` para executar o k-medoids.
+    - A saída dos Y preditos ao executar um Holdout de 50/50 Estratificado foram as seguintes para cada k:
+        - 9:
+            - `[5 6 5 5 5 5 7 7 7 5 3 7 3 8 5 7 5 4 3 8 5 7 0 5 5 7 8 8 6 7 7 2 5 7 1 6 5
+        7 3 6 7 5 5 7 6 6 6 8 5 0 6 7 8 6 6 7 2 6 5 8 4 5 6 1 6 5 5 5 7 5 5 1 5 5
+        3]`
+
+        - 18:
+            - `[ 4  6  4  4  4  4 15 15 15  4 10 15  0 17  4 15  4 11  0  2  4 15  1  4
+        4 15  9 17 14 15 15 13  4  6 16 14  4 15  0 17 15  4  4  6  6 14 14  5
+        4  3  6 15  2 14 16 15 11  6  4  8 12  4  9 14 14  4  4  4  6  4  4  7
+        4  4  0]`
+
+        - 27:
+            - `[ 4 20  4  4  4  4 25  9 25  4 10  9 18 23  4 25  4 17 15  2  4 25 19  4
+        4 25  1 14 26 25 25 13  4  9 11 21  4 25 18  6 25  4  4 20 20 24  6  5
+        4  3 20 25  2  6 11 25 17 20  4  8 12  4 16  0 22  4  4  4 20  4  4  7
+        4  4 15]`
+
+        - 45:
+            - `[41 33 44 41 41 44 36 39 40 41 10 39 32 31 41 43 41 17 18 30 41 43 19 44
+        44 37  1 14 28 40 43 13 41 38 11 21 41 43 29  9 34 41 44 35 25 24  6  5
+        41  3 23 43  2 20 22 37  4 27 44  8 12 41 16  0 26 44 44 41 42 44 41  7
+        44 44 15]`
+
+        - 72:
+            - `[54 37 70  3  4  5  6 61  8  9 10 11 12 13 55 63 16 17 18 19 20 68 22 23
+        62 25 26 27 28 29 30 31 60 33 34 35 36 68 38 39 40 59 57 43 44 45 46 47
+        64 49 50 63 52 53  0 51 48 42 58 41 32 69 24 21 15 65 70 67 14 66 71  7
+        2 56  1]`
+    - A implementação ficou como a seguir:
+        ```python
+        import numpy as np
+
+        from sklearn.model_selection import StratifiedShuffleSplit
+        from sklearn_extra.cluster import KMedoids
+
+        from utils import load_data
+
+        data, _ = load_data('./data/iris.csv', sep=',')
+        X = np.array([[float(v) for k,v in row.items() if k != 'class'] for row in data])
+        y = np.array([next(v for k,v in row.items() if k == 'class') for row in data])
+
+
+        sss = StratifiedShuffleSplit(test_size=.5, n_splits=1)
+        for train_index, test_index in sss.split(X,y):
+            X_train, X_test = X[train_index], X[test_index]
+            y_train, y_test = y[train_index], y[test_index]
+
+            clusters = [9, 18, 27, 45, 72]
+            for k in clusters:
+                kmedoids = KMedoids(
+                    n_clusters=k,
+                    max_iter=10,
+                    random_state=1
+                )
+                y_predicted = kmedoids.fit_predict(X_train)
+                print(f'''
+        - {k}:
+            - `{y_predicted}`
+        ''')
+        ```
+- 2\. b)
+    - Fazendo o procedimento solicitado, segue a saída obtida com a taxa de acerto para cada classe em cada k:
+        - K = 9:
+            - Taxa de acerto setosa: 100.0
+            - Taxa de acerto virginica: 85.714
+            - Taxa de acerto versicolor: 95.455
+        - K = 18:
+            - Taxa de acerto setosa: 100.0
+            - Taxa de acerto virginica: 85.185
+            - Taxa de acerto versicolor: 91.304
+        - K = 27:
+            - Taxa de acerto setosa: 100.0
+            - Taxa de acerto virginica: 92.308
+            - Taxa de acerto versicolor: 95.833
+        - K = 45:
+            - Taxa de acerto setosa: 100.0
+            - Taxa de acerto virginica: 88.889
+            - Taxa de acerto versicolor: 95.652
+        - K = 72:
+            - Taxa de acerto setosa: 100.0
+            - Taxa de acerto virginica: 88.889
+            - Taxa de acerto versicolor: 95.652
+    - Implementação:
+        ```python
+        import numpy as np
+
+        from sklearn.neighbors import KNeighborsClassifier
+        from sklearn.model_selection import StratifiedShuffleSplit
+        from sklearn_extra.cluster import KMedoids
+
+        from utils import load_data
+
+        def calc_taxa_acerto(acertos, erros, classe):
+            return round((acertos[classe] / (acertos[classe] + erros[classe])) * 100, 3)
+
+        data, _ = load_data('./data/iris.csv', sep=',')
+        X = np.array([[float(v) for k,v in row.items() if k != 'class'] for row in data])
+        y = np.array([next(v for k,v in row.items() if k == 'class') for row in data])
+
+
+        sss = StratifiedShuffleSplit(test_size=.5, n_splits=1)
+        for train_index, test_index in sss.split(X,y):
+            X_train, X_test = X[train_index], X[test_index]
+            y_train, y_test = y[train_index], y[test_index]
+
+            clusters = [9, 18, 27, 45, 72]
+            for k in clusters:
+                kmedoids = KMedoids(
+                    n_clusters=k,
+                    max_iter=10,
+                    random_state=1
+                )
+                kmedoids.fit(X_train)
+                centroids = kmedoids.cluster_centers_
+                X_train_reduced = []
+                y_train_reduced = []
+                for i, row in enumerate(X_train):
+                    for centroid in centroids:
+                        equal = True
+                        for x_value, centroid_value in zip(row, centroid):
+                            if x_value != centroid_value:
+                                equal = False
+                                break
+                        if equal:
+                            X_train_reduced.append(row)
+                            y_train_reduced.append(y_train[i])
+
+                knn = KNeighborsClassifier(n_neighbors=1, weights="distance", metric="euclidean")
+                knn.fit(X_train_reduced, y_train_reduced)
+
+                predicts = knn.predict(X_test)
+                acertos = {
+                    'setosa': 0,
+                    'virginica': 0,
+                    'versicolor': 0
+                }
+                erros = {
+                    'setosa': 0,
+                    'virginica': 0,
+                    'versicolor': 0
+                }
+                for i, predict in enumerate(predicts):
+                    if y_test[i] == predict:
+                        acertos[predict] += 1
+                    else:
+                        erros[predict] += 1
+                print(f'- K = {k}:')
+                for classe in acertos:
+                    print(f' - Taxa de acerto {classe}: {calc_taxa_acerto(acertos,erros,classe)}')
+        ```
+- 2\. c) Para essa questão foi necessário apenas usar o `timeit` do python. Ao analisar o resultado, é interessante notar que o tempo de classificação é menor quanto maior o K.
+    - Saída:
+        - K = 9:
+            - Taxa de acerto setosa: 100.0
+            - Taxa de acerto virginica: 92.593
+            - Taxa de acerto versicolor: 100.0
+            - Tempo em 9: 0.002654112999152858
+        - K = 18:
+            - Taxa de acerto setosa: 100.0
+            - Taxa de acerto virginica: 95.833
+            - Taxa de acerto versicolor: 92.308
+            - Tempo em 18: 0.0019247919990448281
+        - K = 27:
+            - Taxa de acerto setosa: 100.0
+            - Taxa de acerto virginica: 92.593
+            - Taxa de acerto versicolor: 100.0
+            - Tempo em 27: 0.0024530160007998347
+        - K = 45:
+            - Taxa de acerto setosa: 100.0
+            - Taxa de acerto virginica: 92.0
+            - Taxa de acerto versicolor: 92.0
+            - Tempo em 45: 0.0024530679947929457
+        - K = 72:
+            - Taxa de acerto setosa: 100.0
+            - Taxa de acerto virginica: 92.308
+            - Taxa de acerto versicolor: 95.833
+            - Tempo em 72: 0.001998302999709267
+    - Implementação (apenas o que muda da questão anterior):
+        ```python
+        ...
+        start = timeit.default_timer()
+        knn.fit(X_train_reduced, y_train_reduced)
+
+        predicts = knn.predict(X_test)
+        stop = timeit.default_timer()
+        ...
+        print(f'- Tempo em {k}: {stop - start}')
+        ```
+- 3\. a)
