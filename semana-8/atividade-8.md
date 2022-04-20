@@ -6,6 +6,7 @@
 ### Exercícios da Semana 01 − Introdução
 ### Processamento de Imagem Digital
 ### Aluno: Vinícius Santos de Almeida
+---
 
 - 1\. 
   - Nessa questão carreguei a imagem usando a classe fornecida `ImagemDigital` e foi bem simples criar o laço duplo com `for`, usei uma `ArrayList` para armazenor os valores e usei o método `contains()` para verificar se cada valor encontrado já existe na lista, caso não exista, então é um valor distinto, então adiciona à lista. A saída, mostrada abaixo, comprova que os retângulos da imagem de fato possuem intensidade constante:
@@ -216,3 +217,65 @@
 
     }
     ```
+- 4\. 
+  - Nesta questão voltei a usar `Python` pela facilidade da biblioteca `Sklearn`, por isso, foi preciso utilizar a biblioteca `Pillow` para carregar as imagens da base e `numpy` para converter as imagens em arrays de RGB, ainda foi necessário empilhar cada valor da array de RGB da imagem em uma lista, um dimensão. Cada imagem foi adiciona a X, e sua classe correspondente foi adicionada e y. A partir desse momento, usei as classes `StratifiedShuffleSplit` e `KNeighborsClassifier`, a primeira para fazer os 10 splits estratificados, e o segunda para classificar com 1-NN, assim como já usei em atividade passadas.
+  - Segue as taxas de acertos de cada classe, e a média de acerto de todos os splits:
+    ```python
+    Taxa de acerto (classe 1): 0.93
+    Taxa de acerto (classe 2): 0.96
+    Taxa de acerto (classe 3): 0.95
+    Taxa de acerto (classe 4): 0.935
+    Taxa de acerto (classe 5): 0.95
+    Taxa de acerto (classe 6): 0.935
+    Taxa de acerto (classe 7): 0.915
+    Taxa de acerto (classe 8): 0.945
+    Taxa de acerto (classe 9): 0.93
+    Taxa de acerto (classe 10): 0.895
+    Média de acertos total: 0.935
+    ```
+  - Implementação:
+    ```python
+    import numpy as np
+
+    from PIL import Image
+    from sklearn.model_selection import StratifiedShuffleSplit
+    from sklearn.neighbors import KNeighborsClassifier
+
+    def load_images(n_class: int, n_sample: int) -> list[list]:
+      X = []
+      y = []
+      for i in range(1, n_class + 1):
+        for j in range(1, n_sample + 1):
+          image = Image.open(f'./static/orl/class_{str(i).rjust(2, "0")}/sample_{str(j).rjust(2, "0")}.png')
+          image_matrix = np.asarray(image)
+          image_list = []
+          for row in image_matrix:
+            for value in row:
+              image_list.append(value)
+          X.append(image_list)
+          y.append(i)
+
+      return np.array(X), np.array(y)
+
+    n_class = 40
+    n_sample = 10
+    X, y = load_images(n_class, n_sample)
+
+    sss = StratifiedShuffleSplit(test_size=.5, n_splits=10)
+    acertos = []
+    for train_index, test_index in sss.split(X,y):
+      X_train, X_test = X[train_index], X[test_index]
+      y_train, y_test = y[train_index], y[test_index]
+
+      knn = KNeighborsClassifier(n_neighbors=1, weights="distance", metric="euclidean")
+      knn.fit(X_train, y_train)
+
+      acertos.append(knn.score(X_test, y_test))
+
+    [print(f'Taxa de acerto (classe {i+1}): {acerto}') for i, acerto in enumerate(acertos)]
+    print(f'Média de acertos total: {round(np.average(np.array(acertos)), 3)}')
+    ```
+- 5\. 
+  - Para fazer essa questão, adaptei o código da anterior, alterando o seguinte: Peguei cada classe predita ao invés do score, percorri cada classe predita comparando com a classe real, quando deu diferente, eu reempilhei a imagem e adicionei numa array, ao final do processo, para cada split eu adicionei esse array de imagens a outro array. No final concatenei todos os arrays para formar uma única imagem apenas com os erros, onde cada linha de imagens é um split. Segue abaixo o resultado:
+    ![Questão 5 erros](static/questao5_erros.PNG)
+  - Ao mesmo tempo, gerei um array com cada imagem mais próxima que encontrei daquela que foi classificada na classe errada, e gerei a seguinte imagem (As imagens se correspondem pelo índice que aparecem):
