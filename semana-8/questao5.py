@@ -2,7 +2,7 @@ import numpy as np
 
 from PIL import Image
 from sklearn.model_selection import StratifiedShuffleSplit
-from sklearn.neighbors import KNeighborsClassifier
+from sklearn.neighbors import KNeighborsClassifier, NearestNeighbors
 
 def load_images(n_class: int, n_sample: int) -> list[list]:
   X = []
@@ -20,23 +20,16 @@ def load_images(n_class: int, n_sample: int) -> list[list]:
 
   return np.array(X), np.array(y)
 
-def fill_missing(array):
-  max_dim = [np.max([a.shape[0] for a in array]), np.max([a.shape[1] for a in array])]
-  new_array = []
-  for a in array:
-      temp = np.zeros((max_dim[0], max_dim[1]))
-      temp[:a.shape[0], :a.shape[1]] = a
-      new_array.append(temp)
-  return new_array
-
 n_class = 40
 n_sample = 10
 X, y = load_images(n_class, n_sample)
 
 sss = StratifiedShuffleSplit(test_size=.5, n_splits=10)
 images = []
+images_neighbor = []
 for train_index, test_index in sss.split(X,y):
   images_split = []
+  images_neighbor_split = []
   X_train, X_test = X[train_index], X[test_index]
   y_train, y_test = y[train_index], y[test_index]
 
@@ -46,11 +39,19 @@ for train_index, test_index in sss.split(X,y):
   predicts = knn.predict(X_test)
   
   for i, predict in enumerate(predicts):
+    couple = []
     if predict != y_test[i]:
+      neighbor = knn.kneighbors([X_test[i]], n_neighbors=1, return_distance=False)
       image_matrix = np.array_split(X_test[i], 112)
-      images_split.append(image_matrix)
+      neighbor_matrix = np.array_split(X_train[neighbor[0][0]], 112)
+      couple.append(image_matrix)
+      couple.append(neighbor_matrix)
+    if couple:
+      images_split.append(couple)
   images.append(images_split)
 
-images1 = [np.concatenate(image, axis=1) for image in images]
-images1 = fill_missing(images1)
-Image.fromarray(np.concatenate(np.array(images1))).show()
+
+for i, images_split in enumerate(images):
+  images1 = [np.concatenate(image, axis=1) for image in images_split]
+  Image.fromarray(np.concatenate(np.array(images1))).save(f'./static/questao5_split_{i+1}.png')
+  print(f'- Split {i+1}: ![Questão 5 split {i+1}](static/questao5_split_{i+1}.png)')

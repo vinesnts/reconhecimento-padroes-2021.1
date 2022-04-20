@@ -276,6 +276,52 @@
     print(f'Média de acertos total: {round(np.average(np.array(acertos)), 3)}')
     ```
 - 5\. 
-  - Para fazer essa questão, adaptei o código da anterior, alterando o seguinte: Peguei cada classe predita ao invés do score, percorri cada classe predita comparando com a classe real, quando deu diferente, eu reempilhei a imagem e adicionei numa array, ao final do processo, para cada split eu adicionei esse array de imagens a outro array. No final concatenei todos os arrays para formar uma única imagem apenas com os erros, onde cada linha de imagens é um split. Segue abaixo o resultado:
-    ![Questão 5 erros](static/questao5_erros.PNG)
-  - Ao mesmo tempo, gerei um array com cada imagem mais próxima que encontrei daquela que foi classificada na classe errada, e gerei a seguinte imagem (As imagens se correspondem pelo índice que aparecem):
+  - Para fazer essa questão, adaptei o código da anterior, alterando o seguinte: Peguei o array de classes preditas ao invés do score e percorri esse array comparando com a classe real, onde a classe foi diferente da real, usei a função `kneighbors()` do `KNeighborsClassifier` na imagem classificada erroneamente e obtive a imagem mais próxima dela no treino, em seguida, reempilhei as duas imagens e adicionei numa array de 2 indices, fiz isso em cada split e ao finalizar fiz a concatenação de cada par de imagens com todas as imagens do split e obtive 10 imagens diferentes (uma para cada split), onde em cada imagem, a coluna da esquerda representa a imagem do teste que deu errado e a da direita a imagem do treino mais próxima dela. Segue abaixo cada uma das imagens:
+    - Split 1: ![Questão 5 split 1](static/questao5_split_1.png)
+    - Split 2: ![Questão 5 split 2](static/questao5_split_2.png)
+    - Split 3: ![Questão 5 split 3](static/questao5_split_3.png)
+    - Split 4: ![Questão 5 split 4](static/questao5_split_4.png)
+    - Split 5: ![Questão 5 split 5](static/questao5_split_5.png)
+    - Split 6: ![Questão 5 split 6](static/questao5_split_6.png)
+    - Split 7: ![Questão 5 split 7](static/questao5_split_7.png)
+    - Split 8: ![Questão 5 split 8](static/questao5_split_8.png)
+    - Split 9: ![Questão 5 split 9](static/questao5_split_9.png)
+    - Split 10: ![Questão 5 split 10](static/questao5_split_10.png)
+  - Implementação (a função `load_images()` é a mesma da questão 4):
+    ```python
+    n_class = 40
+    n_sample = 10
+    X, y = load_images(n_class, n_sample)
+
+    sss = StratifiedShuffleSplit(test_size=.5, n_splits=10)
+    images = []
+    images_neighbor = []
+    for train_index, test_index in sss.split(X,y):
+      images_split = []
+      images_neighbor_split = []
+      X_train, X_test = X[train_index], X[test_index]
+      y_train, y_test = y[train_index], y[test_index]
+
+      knn = KNeighborsClassifier(n_neighbors=1, weights="distance", metric="euclidean")
+      knn.fit(X_train, y_train)
+
+      predicts = knn.predict(X_test)
+      
+      for i, predict in enumerate(predicts):
+        couple = []
+        if predict != y_test[i]:
+          neighbor = knn.kneighbors([X_test[i]], n_neighbors=1, return_distance=False)
+          image_matrix = np.array_split(X_test[i], 112)
+          neighbor_matrix = np.array_split(X_train[neighbor[0][0]], 112)
+          couple.append(image_matrix)
+          couple.append(neighbor_matrix)
+        if couple:
+          images_split.append(couple)
+      images.append(images_split)
+
+
+    for i, images_split in enumerate(images):
+      images1 = [np.concatenate(image, axis=1) for image in images_split]
+      Image.fromarray(np.concatenate(np.array(images1))).save(f'./static/questao5_split_{i+1}.png')
+      print(f'- Split {i+1}: ![Questão 5 split {i+1}](static/questao5_split_{i+1}.png)')
+    ```
