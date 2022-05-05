@@ -5,7 +5,7 @@ public class Questao8 {
   public static void main(String args[]) {
 
     int[][] img = ImagemDigital.carregarImagem("./static/imagens/Fig0314(a)(100-dollars).png");
-    int[] bits = {7,6,5,4,3,2,1,0};
+    int[] bits = {0,1,2,3,4,5,6,7};
     for (int i = 0; i < bits.length; i++) {
       int[][] result = fatiar(img, bits[i]);
       ImagemDigital.plotarImagem(result, "Questão 8, " + (i + 1) + "º bit menos significativo");
@@ -18,10 +18,7 @@ public class Questao8 {
     int[][] result = new int[img.length][img[0].length];
     for (int i = 0; i < img.length; i++) {
       for (int j = 0; j < img[i].length; j++) {
-        String binary = String.format("%8s", Integer.toBinaryString(img[i][j])).replaceAll(" ", "0");
-        if (binary.charAt(bit) == '1') {
-          result[i][j] = img[i][j];
-        }
+        result[i][j] = 255 * ((img[i][j] / (int) Math.pow(2, bit)) % 2);
       }
     }
 

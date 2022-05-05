@@ -406,7 +406,7 @@
     }
     ```
 - 8\. 
-  - Nessa questão, criei um novo método onde uso loops como nas outras questões, porém nesses loops coloquei uma conversão do valor de `img[i][j]` para binário e completando os 0 à esquerda, em seguida, caso o bit em questão fosse igual a 1, eu preencho na nova imagem, caso não, a posição na imagem fica com 0. No `main` coloquei um `for`, e para cada bit menos significativo é feita a chamada do novo método `fatiar` onde ele retorna a nova imagem.
+  - Nessa questão, criei um novo método onde uso loops como nas outras questões, porém nesses loops coloquei a fórmula que salva cada camanda dependendo do valor do bit. No `main` coloquei um `for`, e para cada bit menos significativo é feita a chamada do novo método `fatiar` onde ele retorna a nova imagem.
   - Obtive 8 novas imagens diferentes como mostra-se a seguir:
   - 1º bit: ![1bit](./static/questao8_1.png)
   - 2º bit: ![2bit](./static/questao8_2.png)
@@ -438,10 +438,7 @@
         int[][] result = new int[img.length][img[0].length];
         for (int i = 0; i < img.length; i++) {
           for (int j = 0; j < img[i].length; j++) {
-            String binary = String.format("%8s", Integer.toBinaryString(img[i][j])).replaceAll(" ", "0");
-            if (binary.charAt(bit) == '1') {
-              result[i][j] = img[i][j];
-            }
+            result[i][j] = 255 * ((img[i][j] / (int) Math.pow(2, bit)) % 2);
           }
         }
 
@@ -462,8 +459,8 @@
       public static void main(String args[]) {
 
         int[][] img = ImagemDigital.carregarImagem("./static/imagens/Fig0314(a)(100-dollars).png");
-        int[][] bit7 = fatiar(img, 1);
-        int[][] bit8 = fatiar(img, 0);
+        int[][] bit7 = fatiar(img, 6);
+        int[][] bit8 = fatiar(img, 7);
         int[][] result = combinar(bit7, bit8);
         ImagemDigital.plotarImagem(result, "Questão 9");
       }
@@ -474,10 +471,7 @@
         int[][] result = new int[img.length][img[0].length];
         for (int i = 0; i < img.length; i++) {
           for (int j = 0; j < img[i].length; j++) {
-            String binary = String.format("%8s", Integer.toBinaryString(img[i][j])).replaceAll(" ", "0");
-            if (binary.charAt(bit) == '1') {
-              result[i][j] = img[i][j];
-            }
+            result[i][j] = 255 * ((img[i][j] / (int) Math.pow(2, bit)) % 2);
           }
         }
 
