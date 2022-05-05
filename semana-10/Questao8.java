@@ -19,10 +19,8 @@ public class Questao8 {
     for (int i = 0; i < img.length; i++) {
       for (int j = 0; j < img[i].length; j++) {
         String binary = String.format("%8s", Integer.toBinaryString(img[i][j])).replaceAll(" ", "0");
-        for (int k = 0; k < binary.toCharArray().length; k++) {
-          if (k == bit && binary.charAt(bit) == '1') {
-            result[i][j] = img[i][j];
-          }
+        if (binary.charAt(bit) == '1') {
+          result[i][j] = img[i][j];
         }
       }
     }

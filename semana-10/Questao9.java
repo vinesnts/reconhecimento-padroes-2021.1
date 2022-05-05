@@ -35,7 +35,9 @@ public class Questao9 {
     result = new int[img1.length][img1[0].length];
     for (int i = 0; i < img1.length; i++) {
       for (int j = 0; j < img1[i].length; j++) {
-        result[i][j] = img1[i][j] + img2[i][j];
+        char binary1 = String.format("%8s", Integer.toBinaryString(img1[i][j])).replaceAll(" ", "0").charAt(1);
+        char binary2 = String.format("%8s", Integer.toBinaryString(img2[i][j])).replaceAll(" ", "0").charAt(0);
+        result[i][j] = (binary1=='1' ? (int) Math.pow(2, 6) : 0) + (binary2=='1' ? (int) Math.pow(2,7) : 0);
       }
     }
     return result;

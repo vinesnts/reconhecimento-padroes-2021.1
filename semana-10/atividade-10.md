@@ -347,7 +347,7 @@
       T(r) = {  153, A <= r <= B
                 25, A > r > B
       ```
-    - Gráfica 2:
+    - Gráfico 2:
       ```
       T(r) = {  204, A <= r <= B
                   r, A > r > B
@@ -406,7 +406,7 @@
     }
     ```
 - 8\. 
-  - Nessa questão, coloquei no loop da questão uma conversão do valor de `img[i][j]` para binário, depois completei os 0 à esquerda, e por último salvei na nova imagem apenas se o bit em questão for 1. Coloquei um `for`, para cada bit menos significativo é feita a chamada para o novo método e ele retorna a nova imagem, em seguida plotei.
+  - Nessa questão, criei um novo método onde uso loops como nas outras questões, porém nesses loops coloquei uma conversão do valor de `img[i][j]` para binário e completando os 0 à esquerda, em seguida, caso o bit em questão fosse igual a 1, eu preencho na nova imagem, caso não, a posição na imagem fica com 0. No `main` coloquei um `for`, e para cada bit menos significativo é feita a chamada do novo método `fatiar` onde ele retorna a nova imagem.
   - Obtive 8 novas imagens diferentes como mostra-se a seguir:
   - 1º bit: ![1bit](./static/questao8_1.png)
   - 2º bit: ![2bit](./static/questao8_2.png)
@@ -450,3 +450,113 @@
     }
     ```
 - 9\. 
+  - Nessa questão, usei a mesma função de fatiar da questão anterior, porém fatiando apenas para os dois bits mais significativos, em seguida, usei o método que criei `combinar` que soma apenas os dois bits mais significativos multiplicados pela potencia correspondente na nova imagem.
+  - Saída:
+    - ![questão 9](./static/questao9.png)
+  - Implementação:
+    ```java
+    import java.lang.Integer;
+
+    public class Questao9 {
+      
+      public static void main(String args[]) {
+
+        int[][] img = ImagemDigital.carregarImagem("./static/imagens/Fig0314(a)(100-dollars).png");
+        int[][] bit7 = fatiar(img, 1);
+        int[][] bit8 = fatiar(img, 0);
+        int[][] result = combinar(bit7, bit8);
+        ImagemDigital.plotarImagem(result, "Questão 9");
+      }
+
+      static int[][] fatiar(int[][] img, int bit) {
+        if (img.length <= 0 || img[0].length <= 0) return null;
+
+        int[][] result = new int[img.length][img[0].length];
+        for (int i = 0; i < img.length; i++) {
+          for (int j = 0; j < img[i].length; j++) {
+            String binary = String.format("%8s", Integer.toBinaryString(img[i][j])).replaceAll(" ", "0");
+            if (binary.charAt(bit) == '1') {
+              result[i][j] = img[i][j];
+            }
+          }
+        }
+
+        return result;
+      }
+
+      static int[][] combinar(int[][] img1, int[][] img2) {
+        int[][] result = null;
+        if (img1.length <= 0 || img1.length != img2.length)
+          return result;
+        
+        result = new int[img1.length][img1[0].length];
+        for (int i = 0; i < img1.length; i++) {
+          for (int j = 0; j < img1[i].length; j++) {
+            char binary1 = String.format("%8s", Integer.toBinaryString(img1[i][j])).replaceAll(" ", "0").charAt(1);
+            char binary2 = String.format("%8s", Integer.toBinaryString(img2[i][j])).replaceAll(" ", "0").charAt(0);
+            result[i][j] = (binary1=='1' ? (int) Math.pow(2, 6) : 0) + (binary2=='1' ? (int) Math.pow(2,7) : 0);
+          }
+        }
+        return result;
+      }
+    }
+    ```
+
+- 10\.
+  - Na letra A, optei por usar transformação de gama na imagem, com intuito de deixá-la mais clara na região da floresta, permitindo ver mais detalhes usei o gama 0.6. Segue o resultado abaixo:
+    - ![letra a](./static/questao10_floresta.png)
+  - Na letra B, tentei usar gama primeiro, porém não achei melhoria significante com nenhum valor de gama, já ao tentar negativo, achei o resultado melhor, pois consigo perceber bem os detalhes circulares da célula. Segue a imagem resultante:
+    - ![letra b](./static/questao10_celula.png)
+  - Na letra C, decidi usar transformação gama novamente, dessa vez usei um valor maior que 1, já que minha intenção era deixar a imagem menos saturada. Usei o gama = 4. O resultado não foi totalmente satisfatório, mas não tinha muito o que fazer nas regiões da imagem onde o branco é absoluto:
+    - ![letra c](./static/questao10_img3.png)
+  - Na letra D, tentei várias técnicas, e acabei optante pela técnica de fatiamento de níveis de intensidade na interção de ver com mais detalhes os formatos no interior do cérebro, criei a seguinte função T(r):
+    ```
+    T(r) = {  153, 150 <= r <= 255
+                25, r < 150
+    ```
+    - Segue o resultado: ![letra d](./static/questao10_img4.png)
+  - Implementação das 4 letras:
+    ```java
+    public class Questao10 {
+  
+      public static void main(String args[]) {
+
+        double gama = .6;
+        int[][][] img = ImagemDigital.carregarImagemCor("./static/imagens/Floresta.png");
+        int[][][] floresta = Questao5.transformGama(img, gama);
+        ImagemDigital.plotarImagemCor(floresta, "Floresta, gama: " + gama);
+        
+        int[][] img2 = ImagemDigital.carregarImagem("./static/imagens/Celula.png");
+        int[][] celula = Questao1.imagemNegativa(img2);
+        celula = Questao1.correcaoEscala(celula);
+        ImagemDigital.plotarImagem(celula, "Celula, negativa");
+
+        gama = 4;
+        int[][][] img3 = ImagemDigital.carregarImagemCor("./static/imagens/GorisRaioni.jpg");
+        img3 = Questao5.transformGama(img3, gama);
+        ImagemDigital.plotarImagemCor(img3, "GorisRaioni, gama: " + gama);
+
+        int[][] img4 = ImagemDigital.carregarImagem("./static/imagens/CВrebro.png");
+        img4 = intervalo(img4);
+        img4 = Questao1.correcaoEscala(img4);
+        ImagemDigital.plotarImagem(img4, "Cérebro, gama: " + gama);
+      }
+
+      static int[][] intervalo(int[][] img) {
+        if (img.length <= 0 || img[0].length <= 0) return null;
+
+        int[][] result = new int[img.length][img[0].length];
+        for (int i = 0; i < img.length; i++) {
+          for (int j = 0; j < img[i].length; j++) {
+            if (150 <= img[i][j] && img[i][j] <= 255) {
+              result[i][j] = 153;
+            } else if (img[i][j] < 150) {
+              result[i][j] = 25;
+            }
+          }
+        }
+
+        return result;
+      }
+    }
+    ```

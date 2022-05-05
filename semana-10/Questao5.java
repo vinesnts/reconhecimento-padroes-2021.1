@@ -22,7 +22,7 @@ public class Questao5 {
     for (int i = 0; i < img.length; i++) {
       for (int j = 0; j < img[i].length; j++) {
         for (int k = 0; k < img[i][j].length; k++) {
-          result[i][j][k] = (int) (c * Math.pow(img[i][j][k], gama));
+          result[i][j][k] = (int) Math.min(255, (c * Math.pow(img[i][j][k], gama)));
         }
       }
     }
